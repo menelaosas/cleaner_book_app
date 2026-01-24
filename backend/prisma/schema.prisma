@@ -1,0 +1,385 @@
+// Prisma Schema for Serenity App
+// PostgreSQL Database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  CLEANER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CleaningType {
+  REGULAR
+  DEEP_CLEAN
+  MOVE_IN_OUT
+  POST_CONSTRUCTION
+  COMMERCIAL
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum TimeSlot {
+  MORNING    // 6AM - 12PM
+  AFTERNOON  // 12PM - 6PM
+  EVENING    // 6PM - 10PM
+}
+
+// Models
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  emailVerified     DateTime?
+  password          String?        // Null for social logins
+  firstName         String
+  lastName          String
+  phone             String?
+  avatar            String?
+  role              UserRole       @default(USER)
+  status            UserStatus     @default(PENDING_VERIFICATION)
+  
+  // Social Login
+  googleId          String?        @unique
+  appleId           String?        @unique
+  
+  // Location
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  latitude          Float?
+  longitude         Float?
+  
+  // Preferences
+  preferredLanguage String         @default("en")
+  timezone          String         @default("UTC")
+  
+  // Metadata
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  lastLoginAt       DateTime?
+  
+  // Relations
+  cleanerProfile    CleanerProfile?
+  bookingsAsUser    Booking[]      @relation("UserBookings")
+  bookingsAsCleaner Booking[]      @relation("CleanerBookings")
+  reviews           Review[]       @relation("UserReviews")
+  receivedReviews   Review[]       @relation("CleanerReviews")
+  payments          Payment[]
+  messages          Message[]
+  notifications     Notification[]
+  
+  @@index([email])
+  @@index([role, status])
+  @@map("users")
+}
+
+model CleanerProfile {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional Info
+  bio               String?
+  yearsExperience   Int               @default(0)
+  hourlyRate        Float             @default(35.0)
+  isVerified        Boolean           @default(false)
+  verifiedAt        DateTime?
+  
+  // Certifications
+  certifications    String[]          // Array of certification URLs
+  backgroundCheck   Boolean           @default(false)
+  insurance         Boolean           @default(false)
+  
+  // Specialties & Tags
+  specialties       CleaningType[]
+  tags              String[]          // e.g., "eco-friendly", "pet-friendly"
+  
+  // Service Areas (cities/neighborhoods)
+  serviceAreas      String[]
+  maxTravelDistance Float             @default(15.0) // in miles
+  
+  // Ratings
+  averageRating     Float             @default(0)
+  totalReviews      Int               @default(0)
+  totalBookings     Int               @default(0)
+  
+  // Availability
+  availabilities    Availability[]
+  blockedDates      BlockedDate[]
+  
+  // Metadata
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([userId])
+  @@index([isVerified])
+  @@index([averageRating])
+  @@map("cleaner_profiles")
+}
+
+model Availability {
+  id              String          @id @default(cuid())
+  cleanerId       String
+  cleaner         CleanerProfile  @relation(fields: [cleanerId], references: [id], onDelete: Cascade)
+  
+  dayOfWeek       DayOfWeek
+  timeSlot        TimeSlot
+  isAvailable     Boolean         @default(true)
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([cleanerId, dayOfWeek, timeSlot])
+  @@index([cleanerId])
+  @@map("availabilities")
+}
+
+model BlockedDate {
+  id              String          @id @default(cuid())
+  cleanerId       String
+  cleaner         CleanerProfile  @relation(fields: [cleanerId], references: [id], onDelete: Cascade)
+  
+  date            DateTime        @db.Date
+  reason          String?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([cleanerId, date])
+  @@map("blocked_dates")
+}
+
+model Booking {
+  id              String          @id @default(cuid())
+  
+  // User
+  userId          String
+  user            User            @relation("UserBookings", fields: [userId], references: [id])
+  
+  // Cleaner
+  cleanerId       String
+  cleaner         User            @relation("CleanerBookings", fields: [cleanerId], references: [id])
+  
+  // Booking Details
+  scheduledDate   DateTime        @db.Date
+  scheduledTime   DateTime        @db.Time
+  duration        Int             // in hours
+  cleaningType    CleaningType
+  
+  // Location
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  instructions    String?         // Special instructions
+  
+  // Pricing
+  hourlyRate      Float
+  totalHours      Float
+  subtotal        Float
+  serviceFee      Float
+  tax             Float
+  totalAmount     Float
+  
+  // Status
+  status          BookingStatus   @default(PENDING)
+  
+  // Metadata
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  confirmedAt     DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  cancellationReason String?
+  
+  // Relations
+  payment         Payment?
+  review          Review?
+  messages        Message[]
+  
+  @@index([userId])
+  @@index([cleanerId])
+  @@index([status])
+  @@index([scheduledDate])
+  @@map("bookings")
+}
+
+model Payment {
+  id              String          @id @default(cuid())
+  
+  bookingId       String          @unique
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  
+  // Payment Details
+  amount          Float
+  currency        String          @default("USD")
+  status          PaymentStatus   @default(PENDING)
+  
+  // Payment Gateway (Stripe)
+  stripePaymentIntentId String?   @unique
+  stripeChargeId        String?   @unique
+  stripeCustomerId      String?
+  
+  // Payout
+  cleanerPayout   Float?
+  platformFee     Float?
+  payoutStatus    String?         // pending, processing, paid
+  
+  // Metadata
+  paymentMethod   String?         // card, google_pay, apple_pay
+  last4           String?
+  brand           String?
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  
+  @@index([userId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Review {
+  id              String          @id @default(cuid())
+  
+  bookingId       String          @unique
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  
+  // Reviewer (User)
+  reviewerId      String
+  reviewer        User            @relation("UserReviews", fields: [reviewerId], references: [id])
+  
+  // Reviewee (Cleaner)
+  cleanerId       String
+  cleaner         User            @relation("CleanerReviews", fields: [cleanerId], references: [id])
+  
+  // Review Content
+  rating          Int             // 1-5 stars
+  comment         String?
+  
+  // Detailed Ratings
+  punctuality     Int?            // 1-5
+  professionalism Int?            // 1-5
+  quality         Int?            // 1-5
+  
+  isPublic        Boolean         @default(true)
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([cleanerId, rating])
+  @@index([reviewerId])
+  @@map("reviews")
+}
+
+model Message {
+  id              String          @id @default(cuid())
+  
+  senderId        String
+  sender          User            @relation(fields: [senderId], references: [id])
+  
+  bookingId       String
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+  
+  content         String
+  isRead          Boolean         @default(false)
+  readAt          DateTime?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([bookingId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model Notification {
+  id              String          @id @default(cuid())
+  
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            String          // booking_confirmed, booking_cancelled, new_message, etc.
+  title           String
+  message         String
+  data            Json?           // Additional data
+  
+  isRead          Boolean         @default(false)
+  readAt          DateTime?
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model VerificationToken {
+  id              String          @id @default(cuid())
+  email           String
+  token           String          @unique
+  type            String          // email_verification, password_reset
+  expiresAt       DateTime
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([email])
+  @@index([token])
+  @@map("verification_tokens")
+}
+
+model RefreshToken {
+  id              String          @id @default(cuid())
+  userId          String
+  token           String          @unique
+  expiresAt       DateTime
+  
+  createdAt       DateTime        @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}

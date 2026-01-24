@@ -1,0 +1,77 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+export default function Home() {
+  const [health, setHealth] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/health')
+      .then(res => res.json())
+      .then(data => setHealth(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+      <div className="max-w-4xl w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            Serenity Home Cleaning
+          </h1>
+          <p className="text-xl text-gray-600">
+            Professional cleaning services
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold mb-4">Status</h2>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className={health ? 'text-green-500' : 'text-yellow-500'}>●</span>
+              <span>Backend: {health ? 'Connected' : 'Connecting...'}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="text-green-500">●</span>
+              <span>Frontend: Running</span>
+            </div>
+          </div>
+
+          {health && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm">Uptime: {health.uptime?.toFixed(2)}s</p>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-green-100 border-2 border-green-500 rounded-2xl p-6 text-center">
+          <h3 className="text-2xl font-bold text-green-900 mb-2">Success!</h3>
+          <p className="text-green-800">Your app is running</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <Link href="/register" className="block p-6 bg-white rounded-xl shadow hover:shadow-lg transition-shadow text-center">
+            <div className="text-3xl mb-2">🚀</div>
+            <h4 className="font-bold mb-1">Register</h4>
+            <p className="text-sm text-gray-600">Create account</p>
+          </Link>
+
+          <Link href="/login" className="block p-6 bg-primary text-white rounded-xl shadow hover:shadow-lg transition-all text-center">
+            <div className="text-3xl mb-2">🔐</div>
+            <h4 className="font-bold mb-1">Login</h4>
+            <p className="text-sm opacity-90">Sign in</p>
+          </Link>
+
+          <a href="http://localhost:5000/health" target="_blank" className="block p-6 bg-white rounded-xl shadow hover:shadow-lg transition-shadow text-center">
+            <div className="text-3xl mb-2">🔍</div>
+            <h4 className="font-bold mb-1">API</h4>
+            <p className="text-sm text-gray-600">Check health</p>
+          </a>
+        </div>
+      </div>
+    </main>
+  );
+}
