@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
+import { ArrowLeft, LogOut, Trash2 } from 'lucide-react';
+import { Card, Button, Input, Alert } from '../../components/ui';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
-  
+
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -66,7 +68,7 @@ export default function SettingsPage() {
         }
       );
 
-      updateUser(response.data.data.user);
+      updateUser(response.data.data);
       setSuccess('Profile updated successfully!');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');
@@ -144,298 +146,235 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg">
-                <span className="text-xl">←</span>
+              <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
               </button>
-              <h1 className="text-xl font-bold">Settings</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={logout}
-              className="text-sm text-red-600 hover:text-red-700 font-medium"
+              leftIcon={<LogOut className="w-4 h-4" />}
+              className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow border border-gray-200 mb-6">
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`flex-1 px-6 py-4 font-medium transition-all ${
-                activeTab === 'profile'
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Profile
-            </button>
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`flex-1 px-6 py-4 font-medium transition-all ${
-                activeTab === 'security'
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Security
-            </button>
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`flex-1 px-6 py-4 font-medium transition-all ${
-                activeTab === 'notifications'
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Notifications
-            </button>
+        <Card padding="none" className="mb-6">
+          <div className="flex border-b border-gray-200 dark:border-gray-700">
+            {[
+              { value: 'profile', label: 'Profile' },
+              { value: 'security', label: 'Security' },
+              { value: 'notifications', label: 'Notifications' },
+            ].map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => { setActiveTab(tab.value); setSuccess(''); setError(''); }}
+                className={`flex-1 px-6 py-4 font-medium transition-all ${
+                  activeTab === tab.value
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </div>
+        </Card>
 
         {/* Messages */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
-            <p className="text-green-800">{success}</p>
+          <div className="mb-6">
+            <Alert variant="success" title={success} dismissible onDismiss={() => setSuccess('')} />
           </div>
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-6">
+            <Alert variant="error" title={error} dismissible onDismiss={() => setError('')} />
           </div>
         )}
 
         {/* Profile Tab */}
         {activeTab === 'profile' && (
-          <div className="bg-white rounded-xl shadow p-6 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-6">Personal Information</h2>
-            
+          <Card padding="md">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Personal Information</h2>
+
             <form onSubmit={handleProfileUpdate} className="space-y-6">
               {/* Name */}
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">First Name</label>
-                  <input
-                    type="text"
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    required
-                  />
-                </div>
+                <Input
+                  label="First Name"
+                  value={profileData.firstName}
+                  onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                  required
+                />
+                <Input
+                  label="Last Name"
+                  value={profileData.lastName}
+                  onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                  required
+                />
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
-                <input
+                <Input
+                  label="Email"
                   type="email"
                   value={profileData.email}
                   disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                  helperText="Email cannot be changed"
                 />
-                <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
               </div>
 
               {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                  placeholder="+1 (555) 123-4567"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
+              <Input
+                label="Phone Number"
+                type="tel"
+                value={profileData.phone}
+                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                placeholder="+1 (555) 123-4567"
+              />
 
               {/* Address */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Address</label>
-                <input
-                  type="text"
-                  value={profileData.address}
-                  onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                  placeholder="123 Main St"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
+              <Input
+                label="Address"
+                value={profileData.address}
+                onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                placeholder="123 Main St"
+              />
 
               {/* City, State, Zip */}
               <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">City</label>
-                  <input
-                    type="text"
-                    value={profileData.city}
-                    onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">State</label>
-                  <input
-                    type="text"
-                    value={profileData.state}
-                    onChange={(e) => setProfileData({ ...profileData, state: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Zip Code</label>
-                  <input
-                    type="text"
-                    value={profileData.zipCode}
-                    onChange={(e) => setProfileData({ ...profileData, zipCode: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                </div>
+                <Input
+                  label="City"
+                  value={profileData.city}
+                  onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
+                />
+                <Input
+                  label="State"
+                  value={profileData.state}
+                  onChange={(e) => setProfileData({ ...profileData, state: e.target.value })}
+                />
+                <Input
+                  label="Zip Code"
+                  value={profileData.zipCode}
+                  onChange={(e) => setProfileData({ ...profileData, zipCode: e.target.value })}
+                />
               </div>
 
               {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
+              <Button type="submit" fullWidth loading={loading}>
+                Save Changes
+              </Button>
             </form>
-          </div>
+          </Card>
         )}
 
         {/* Security Tab */}
         {activeTab === 'security' && (
           <div className="space-y-6">
             {/* Change Password */}
-            <div className="bg-white rounded-xl shadow p-6 border border-gray-200">
-              <h2 className="text-2xl font-bold mb-6">Change Password</h2>
-              
+            <Card padding="md">
+              <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Change Password</h2>
+
               <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Current Password</label>
-                  <input
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Current Password"
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  required
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">New Password</label>
-                  <input
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    minLength={8}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    required
-                  />
-                  <p className="mt-1 text-xs text-gray-500">Minimum 8 characters</p>
-                </div>
+                <Input
+                  label="New Password"
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  helperText="Minimum 8 characters"
+                  required
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
-                  <input
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    required
-                  />
-                </div>
+                <Input
+                  label="Confirm New Password"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                  required
+                />
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50"
-                >
-                  {loading ? 'Changing Password...' : 'Change Password'}
-                </button>
+                <Button type="submit" fullWidth loading={loading}>
+                  Change Password
+                </Button>
               </form>
-            </div>
+            </Card>
 
             {/* Delete Account */}
-            <div className="bg-white rounded-xl shadow p-6 border border-red-200">
+            <Card padding="md" className="border-red-200 dark:border-red-800">
               <h2 className="text-2xl font-bold mb-4 text-red-600">Danger Zone</h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Once you delete your account, there is no going back. Please be certain.
               </p>
-              <button
+              <Button
+                variant="danger"
                 onClick={handleDeleteAccount}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all"
+                leftIcon={<Trash2 className="w-4 h-4" />}
               >
                 Delete Account
-              </button>
-            </div>
+              </Button>
+            </Card>
           </div>
         )}
 
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
-          <div className="bg-white rounded-xl shadow p-6 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-6">Notification Preferences</h2>
-            
+          <Card padding="md">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Notification Preferences</h2>
+
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <h3 className="font-medium">Email Notifications</h3>
-                  <p className="text-sm text-gray-600">Receive booking updates via email</p>
+              {[
+                { label: 'Email Notifications', description: 'Receive booking updates via email', defaultChecked: true },
+                { label: 'SMS Notifications', description: 'Receive booking reminders via SMS', defaultChecked: false },
+                { label: 'Marketing Emails', description: 'Receive updates about new features', defaultChecked: true },
+                { label: 'Push Notifications', description: 'Receive push notifications in browser', defaultChecked: false },
+              ].map((item, index, arr) => (
+                <div
+                  key={item.label}
+                  className={`flex items-center justify-between py-4 ${
+                    index !== arr.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
+                  }`}
+                >
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{item.label}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 text-primary rounded border-gray-300 dark:border-gray-600 focus:ring-primary"
+                    defaultChecked={item.defaultChecked}
+                  />
                 </div>
-                <input type="checkbox" className="w-5 h-5 text-primary rounded" defaultChecked />
-              </div>
-
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <h3 className="font-medium">SMS Notifications</h3>
-                  <p className="text-sm text-gray-600">Receive booking reminders via SMS</p>
-                </div>
-                <input type="checkbox" className="w-5 h-5 text-primary rounded" />
-              </div>
-
-              <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                <div>
-                  <h3 className="font-medium">Marketing Emails</h3>
-                  <p className="text-sm text-gray-600">Receive updates about new features</p>
-                </div>
-                <input type="checkbox" className="w-5 h-5 text-primary rounded" defaultChecked />
-              </div>
-
-              <div className="flex items-center justify-between py-4">
-                <div>
-                  <h3 className="font-medium">Push Notifications</h3>
-                  <p className="text-sm text-gray-600">Receive push notifications in browser</p>
-                </div>
-                <input type="checkbox" className="w-5 h-5 text-primary rounded" />
-              </div>
+              ))}
             </div>
 
-            <button className="mt-6 w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-all">
+            <Button fullWidth className="mt-6">
               Save Preferences
-            </button>
-          </div>
+            </Button>
+          </Card>
         )}
       </main>
     </div>

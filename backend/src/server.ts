@@ -42,6 +42,7 @@ class App {
       },
     });
 
+    this.app.set('io', this.io);
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();

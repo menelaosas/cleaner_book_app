@@ -1,17 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import Link from 'next/link';
+import { Home, ArrowLeft } from 'lucide-react';
+import { Button, Input, Alert } from '../../../components/ui';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false,
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +26,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      await login(formData.email, formData.password, redirectTo || undefined);
     } catch (err: any) {
       setError(err.message || 'Login failed');
       setLoading(false);
@@ -42,10 +47,10 @@ export default function LoginPage() {
         {/* Header */}
         <div className="flex items-center px-4 py-4 justify-between border-b border-gray-100 dark:border-gray-700">
           <Link href="/" className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <span className="text-2xl">←</span>
+            <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
           </Link>
           <div className="flex-1"></div>
-          <Link href="/register" className="text-sm font-medium text-primary hover:text-primary/80">
+          <Link href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'} className="text-sm font-medium text-primary hover:text-primary/80">
             Sign up
           </Link>
         </div>
@@ -56,9 +61,9 @@ export default function LoginPage() {
             {/* Logo/Hero */}
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 mx-auto">
-                <span className="text-4xl">🏡</span>
+                <Home className="w-8 h-8 text-primary" />
               </div>
-              <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+              <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Welcome Back</h1>
               <p className="text-gray-600 dark:text-gray-400">
                 Sign in to your Serenity account
               </p>
@@ -66,61 +71,47 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              <div className="mb-6">
+                <Alert variant="error">{error}</Alert>
               </div>
             )}
 
             {/* Form */}
             <form className="space-y-5" onSubmit={handleSubmit}>
               {/* Email */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="email">
-                  Email Address
-                </label>
-                <input
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 h-12 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary text-base"
-                  id="email"
-                  name="email"
-                  placeholder="jane@example.com"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
-              </div>
+              <Input
+                label="Email Address"
+                id="email"
+                name="email"
+                placeholder="jane@example.com"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                disabled={loading}
+              />
 
               {/* Password */}
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <label className="text-sm font-medium" htmlFor="password">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="password">
                     Password
                   </label>
                   <Link href="/forgot-password" className="text-xs text-primary hover:underline">
                     Forgot password?
                   </Link>
                 </div>
-                <div className="relative">
-                  <input
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 h-12 px-4 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary text-base"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    disabled={loading}
-                  />
-                  <button
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
-                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                  showPasswordToggle
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
               </div>
 
               {/* Remember Me */}
@@ -140,13 +131,13 @@ export default function LoginPage() {
               </div>
 
               {/* Submit Button */}
-              <button
-                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold h-12 rounded-lg shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
+              <Button
                 type="submit"
-                disabled={loading}
+                fullWidth
+                loading={loading}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </button>
+                Sign In
+              </Button>
             </form>
 
             {/* Social Login Divider */}
@@ -161,21 +152,25 @@ export default function LoginPage() {
 
             {/* Social Buttons */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <button className="flex items-center justify-center h-11 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                <span className="text-lg mr-2">G</span>
-                <span className="text-sm font-medium">Google</span>
-              </button>
-              <button className="flex items-center justify-center h-11 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                <span className="text-lg mr-2">🍎</span>
-                <span className="text-sm font-medium">Apple</span>
-              </button>
+              <Button variant="outline" size="md">
+                <span className="text-lg mr-2 font-semibold">G</span>
+                Google
+              </Button>
+              <Button variant="outline" size="md">
+                <span className="text-lg mr-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                  </svg>
+                </span>
+                Apple
+              </Button>
             </div>
 
             {/* Footer */}
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
-                <Link href="/register" className="font-semibold text-primary hover:underline">
+                Don&apos;t have an account?{' '}
+                <Link href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'} className="font-semibold text-primary hover:underline">
                   Sign up
                 </Link>
               </p>

@@ -20,13 +20,18 @@ interface User {
   status: string;
   emailVerified: boolean;
   avatar?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string, redirectTo?: string) => Promise<void>;
+  register: (data: RegisterData, redirectTo?: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
 }
@@ -79,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, [fetchUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, redirectTo?: string) => {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         email,
@@ -96,7 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       setUser(user);
 
-      if (user.role === 'CLEANER') {
+      // Use custom redirect if provided, otherwise use default based on role
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (user.role === 'CLEANER') {
         router.push('/cleaner/dashboard');
       } else {
         router.push('/dashboard');
@@ -106,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const register = async (data: RegisterData, redirectTo?: string) => {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, data);
 
@@ -115,12 +123,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
+        // Store the redirect URL for after email verification if needed
+        if (redirectTo) {
+          localStorage.setItem('postAuthRedirect', redirectTo);
+        }
       }
 
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       setUser(user);
 
-      router.push('/verify-email');
+      // For now, redirect directly (skip email verification in dev)
+      // In production, this should go to /verify-email first
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else if (data.role === 'CLEANER') {
+        router.push('/cleaner/setup');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Registration failed');
     }
