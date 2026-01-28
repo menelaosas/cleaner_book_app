@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import Link from 'next/link';
 import { ArrowLeft, Home, Search, Sparkles, Mail, ArrowRight } from 'lucide-react';
 import { Button, Input, Alert } from '../../../components/ui';
 
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
   const roleParam = searchParams.get('role');
@@ -35,12 +37,12 @@ export default function RegisterPage() {
     setError('');
 
     if (!formData.agreeToTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy');
+      setError(t('register', 'termsError'));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('register', 'passwordMinError'));
       return;
     }
 
@@ -77,7 +79,7 @@ export default function RegisterPage() {
           </Link>
           <div className="flex-1"></div>
           <Link href={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login'} className="text-sm font-medium text-primary hover:text-primary/80">
-            Log in
+            {t('register', 'logIn')}
           </Link>
         </div>
 
@@ -89,16 +91,16 @@ export default function RegisterPage() {
               <Home className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-3xl font-bold leading-tight mb-2 text-gray-900 dark:text-white">
-              Welcome to Serenity
+              {t('register', 'welcomeToSerenity')}
             </h1>
             <p className="text-base text-gray-600 dark:text-gray-400">
-              Create an account to book trusted cleaners in minutes.
+              {t('register', 'createAccount')}
             </p>
           </div>
 
           {/* Verification Notice */}
-          <Alert variant="info" title="Email Verification Required" className="mb-6">
-            We&apos;ll send a secure link to verify your email address.
+          <Alert variant="info" title={t('register', 'emailVerificationRequired')} className="mb-6">
+            {t('register', 'wellSendLink')}
           </Alert>
 
           {/* Error Message */}
@@ -114,7 +116,7 @@ export default function RegisterPage() {
             <div className="flex gap-3">
               <div className="flex-1">
                 <Input
-                  label="First Name"
+                  label={t('register', 'firstName')}
                   id="firstName"
                   name="firstName"
                   placeholder="Jane"
@@ -127,7 +129,7 @@ export default function RegisterPage() {
               </div>
               <div className="flex-1">
                 <Input
-                  label="Last Name"
+                  label={t('register', 'lastName')}
                   id="lastName"
                   name="lastName"
                   placeholder="Doe"
@@ -142,7 +144,7 @@ export default function RegisterPage() {
 
             {/* Email Field */}
             <Input
-              label="Email Address"
+              label={t('register', 'emailAddress')}
               id="email"
               name="email"
               placeholder="jane@example.com"
@@ -157,14 +159,14 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="password">
-                  Password
+                  {t('register', 'password')}
                 </label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Min. 8 characters</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('register', 'minCharacters')}</span>
               </div>
               <Input
                 id="password"
                 name="password"
-                placeholder="Create a password"
+                placeholder={t('register', 'createPassword')}
                 type="password"
                 showPasswordToggle
                 required
@@ -177,7 +179,7 @@ export default function RegisterPage() {
 
             {/* Role Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">I want to:</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('register', 'iWantTo')}</label>
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -190,7 +192,7 @@ export default function RegisterPage() {
                   disabled={loading}
                 >
                   <Search className="w-6 h-6 mx-auto mb-1 text-gray-700 dark:text-gray-300" />
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">Find Cleaners</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('register', 'findCleaners')}</div>
                 </button>
                 <button
                   type="button"
@@ -203,7 +205,7 @@ export default function RegisterPage() {
                   disabled={loading}
                 >
                   <Sparkles className="w-6 h-6 mx-auto mb-1 text-gray-700 dark:text-gray-300" />
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">Become a Cleaner</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('register', 'becomeACleaner')}</div>
                 </button>
               </div>
             </div>
@@ -220,13 +222,13 @@ export default function RegisterPage() {
                 disabled={loading}
               />
               <label className="ml-3 text-sm text-gray-600 dark:text-gray-400" htmlFor="agreeToTerms">
-                I agree to the{' '}
+                {t('register', 'agreeToTerms')}{' '}
                 <a className="font-medium text-primary hover:underline" href="#">
-                  Terms of Service
+                  {t('register', 'termsOfService')}
                 </a>{' '}
-                and{' '}
+                {t('register', 'and')}{' '}
                 <a className="font-medium text-primary hover:underline" href="#">
-                  Privacy Policy
+                  {t('register', 'privacyPolicy')}
                 </a>
               </label>
             </div>
@@ -239,7 +241,7 @@ export default function RegisterPage() {
                 loading={loading}
                 rightIcon={<ArrowRight className="w-5 h-5" />}
               >
-                Get Started
+                {t('register', 'getStarted')}
               </Button>
             </div>
           </form>
@@ -250,7 +252,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">{t('common', 'orContinueWith')}</span>
             </div>
           </div>
 
@@ -273,9 +275,9 @@ export default function RegisterPage() {
           {/* Footer */}
           <div className="text-center pb-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              {t('register', 'alreadyHaveAccount')}{' '}
               <Link href={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login'} className="font-semibold text-primary hover:underline">
-                Log in
+                {t('register', 'logIn')}
               </Link>
             </p>
           </div>

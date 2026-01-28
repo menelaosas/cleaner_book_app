@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { ArrowLeft, MoreHorizontal, Star, CheckCircle, ArrowRight, User } from 'lucide-react';
 import { Card, Badge, Button, LoadingSpinner, Avatar, StarRating } from '../../../components/ui';
 
 export default function CleanerProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const cleanerId = params.id as string;
 
   const [cleaner, setCleaner] = useState<any>(null);
@@ -61,7 +63,7 @@ export default function CleanerProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading profile..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -73,9 +75,9 @@ export default function CleanerProfilePage() {
           <div className="w-20 h-20 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
             <User className="w-10 h-10 text-gray-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Cleaner not found</h2>
+          <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerProfile', 'cleanerNotFound')}</h2>
           <Link href="/cleaners" className="text-primary hover:underline">
-            Back to cleaners
+            {t('cleanerProfile', 'backToCleaners')}
           </Link>
         </div>
       </div>
@@ -90,7 +92,7 @@ export default function CleanerProfilePage() {
           <div className="flex items-center justify-between">
             <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
               <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Back</span>
+              <span className="font-medium">{t('common', 'back')}</span>
             </button>
             <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -111,7 +113,7 @@ export default function CleanerProfilePage() {
           <h1 className="text-3xl font-bold mt-4 text-gray-900 dark:text-white">
             {cleaner.user.firstName} {cleaner.user.lastName}
           </h1>
-          <Badge variant="primary" className="mt-2">Top Rated Pro</Badge>
+          <Badge variant="primary" className="mt-2">{t('cleanerProfile', 'topRatedPro')}</Badge>
         </div>
 
         {/* Stats */}
@@ -122,26 +124,26 @@ export default function CleanerProfilePage() {
               <Star className="w-5 h-5 fill-primary text-primary" />
             </div>
             <div className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-              Rating
+              {t('cleanerProfile', 'rating')}
             </div>
           </Card>
           <Card padding="md" className="text-center">
             <div className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">{cleaner.totalBookings}+</div>
             <div className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-              Cleans
+              {t('cleanerProfile', 'cleans')}
             </div>
           </Card>
           <Card padding="md" className="text-center">
             <div className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">{cleaner.yearsExperience}y</div>
             <div className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-              Experience
+              {t('cleanerProfile', 'experience')}
             </div>
           </Card>
         </div>
 
         {/* About */}
         <Card padding="md" className="mb-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">About {cleaner.user.firstName}</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('cleanerProfile', 'about')} {cleaner.user.firstName}</h2>
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{cleaner.bio}</p>
           <div className="flex flex-wrap gap-2">
             {cleaner.tags.map((tag: string) => (
@@ -156,9 +158,9 @@ export default function CleanerProfilePage() {
         {/* Reviews */}
         <Card padding="md">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Reviews</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('cleanerProfile', 'recentReviews')}</h2>
             <Link href="#" className="text-primary text-sm font-semibold hover:underline">
-              See all
+              {t('cleanerProfile', 'seeAll')}
             </Link>
           </div>
 
@@ -174,7 +176,7 @@ export default function CleanerProfilePage() {
                       />
                       <div>
                         <p className="font-bold text-sm text-gray-900 dark:text-white">
-                          {review.reviewer?.firstName || 'Anonymous'} {review.reviewer?.lastName || ''}
+                          {review.reviewer?.firstName || t('cleanerProfile', 'anonymous')} {review.reviewer?.lastName || ''}
                         </p>
                         <StarRating value={review.rating} readonly size="sm" />
                       </div>
@@ -191,7 +193,7 @@ export default function CleanerProfilePage() {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-4">No reviews yet</p>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-4">{t('cleanerProfile', 'noReviews')}</p>
             )}
           </div>
         </Card>
@@ -202,7 +204,7 @@ export default function CleanerProfilePage() {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <div className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 mb-1">
-              Price
+              {t('cleanerProfile', 'price')}
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-bold text-gray-900 dark:text-white">${cleaner.hourlyRate}</span>
@@ -214,7 +216,7 @@ export default function CleanerProfilePage() {
             onClick={() => router.push(`/booking/${cleanerId}`)}
             rightIcon={<ArrowRight className="w-5 h-5" />}
           >
-            Book {cleaner.user.firstName}
+            {t('cleanerProfile', 'book')} {cleaner.user.firstName}
           </Button>
         </div>
       </div>

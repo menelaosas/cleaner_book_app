@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, Star, Calendar, Loader2, Minus, Plus } from 'lucide-react';
@@ -14,18 +15,19 @@ interface TimeSlot {
   available: boolean;
 }
 
-const cleaningTypes = [
-  { value: 'REGULAR', label: 'Standard Cleaning', description: 'Regular cleaning of all rooms' },
-  { value: 'DEEP_CLEAN', label: 'Deep Cleaning', description: 'Thorough cleaning including hard-to-reach areas' },
-  { value: 'MOVE_IN_OUT', label: 'Move In/Out', description: 'Complete cleaning for moving' },
-  { value: 'POST_CONSTRUCTION', label: 'Post Construction', description: 'Clean up after renovation work' },
-  { value: 'COMMERCIAL', label: 'Commercial Cleaning', description: 'Professional commercial space cleaning' },
+const getCleaningTypes = (t: (section: string, key: string) => string) => [
+  { value: 'REGULAR', label: t('booking', 'standardCleaning'), description: t('booking', 'standardDesc') },
+  { value: 'DEEP_CLEAN', label: t('booking', 'deepCleaning'), description: t('booking', 'deepDesc') },
+  { value: 'MOVE_IN_OUT', label: t('booking', 'moveInOut'), description: t('booking', 'moveDesc') },
+  { value: 'POST_CONSTRUCTION', label: t('booking', 'postConstruction'), description: t('booking', 'postDesc') },
+  { value: 'COMMERCIAL', label: t('booking', 'commercialCleaning'), description: t('booking', 'commercialDesc') },
 ];
 
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const cleanerId = params.cleanerId as string;
 
   const [cleaner, setCleaner] = useState<any>(null);
@@ -67,7 +69,7 @@ export default function BookingPage() {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/cleaners/${cleanerId}`);
       setCleaner(response.data.data);
     } catch (error) {
-      toast.error('Failed to load cleaner profile');
+      toast.error(t('booking', 'failedLoadCleaner'));
       router.push('/cleaners');
     } finally {
       setLoading(false);
@@ -110,17 +112,17 @@ export default function BookingPage() {
 
   const handleBooking = async () => {
     if (!selectedDate || !selectedTime) {
-      toast.error('Please select both date and time');
+      toast.error(t('booking', 'selectDateAndTime'));
       return;
     }
 
     if (!address || !city || !state || !zipCode) {
-      toast.error('Please fill in all address fields');
+      toast.error(t('booking', 'fillAddress'));
       return;
     }
 
     if (!user) {
-      toast.error('Please login to book');
+      toast.error(t('booking', 'pleaseLogin'));
       router.push('/login');
       return;
     }
@@ -150,14 +152,14 @@ export default function BookingPage() {
         }
       );
 
-      toast.success('Booking request sent successfully!');
+      toast.success(t('booking', 'bookingSuccess'));
       router.push('/bookings');
     } catch (error: any) {
       if (error.response?.status === 401) {
-        toast.error('Please login to book');
+        toast.error(t('booking', 'pleaseLogin'));
         router.push('/login');
       } else {
-        toast.error(error.response?.data?.message || 'Booking failed. Please try again.');
+        toast.error(error.response?.data?.message || t('booking', 'bookingFailed'));
       }
     } finally {
       setSubmitting(false);
@@ -198,7 +200,7 @@ export default function BookingPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -216,7 +218,7 @@ export default function BookingPage() {
             <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Book Cleaning</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">{t('booking', 'bookCleaning')}</h1>
             <div className="w-10"></div>
           </div>
         </div>
@@ -244,9 +246,9 @@ export default function BookingPage() {
 
         {/* Cleaning Type */}
         <Card padding="md" className="mb-6">
-          <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Cleaning Type</h3>
+          <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('booking', 'cleaningType')}</h3>
           <div className="space-y-3">
-            {cleaningTypes.map((type) => (
+            {getCleaningTypes(t).map((type) => (
               <button
                 key={type.value}
                 onClick={() => setCleaningType(type.value)}
@@ -266,7 +268,7 @@ export default function BookingPage() {
         {/* Calendar */}
         <Card padding="md" className="mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-bold text-lg text-gray-900 dark:text-white">Select Date</h2>
+            <h2 className="font-bold text-lg text-gray-900 dark:text-white">{t('booking', 'selectDate')}</h2>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
@@ -333,7 +335,7 @@ export default function BookingPage() {
         {/* Time Slots */}
         {selectedDate && (
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Select Time</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('booking', 'selectTime')}</h3>
             <div className="grid grid-cols-3 gap-3">
               {timeSlots.map((slot) => (
                 <button
@@ -365,7 +367,7 @@ export default function BookingPage() {
         {/* Duration Selector */}
         {selectedTime && (
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Duration</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('booking', 'duration')}</h3>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setDuration(Math.max(1, duration - 1))}
@@ -375,7 +377,7 @@ export default function BookingPage() {
               </button>
               <div className="flex-1 text-center">
                 <div className="text-3xl font-bold text-gray-900 dark:text-white">{duration}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">hours</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{t('common', 'hours')}</div>
               </div>
               <button
                 onClick={() => setDuration(Math.min(8, duration + 1))}
@@ -390,10 +392,10 @@ export default function BookingPage() {
         {/* Address Section */}
         {selectedTime && (
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Service Address</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('booking', 'serviceAddress')}</h3>
             <div className="space-y-4">
               <Input
-                label="Street Address"
+                label={t('booking', 'streetAddress')}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="123 Main St"
@@ -401,14 +403,14 @@ export default function BookingPage() {
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="City"
+                  label={t('booking', 'city')}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="New York"
                   required
                 />
                 <Input
-                  label="State"
+                  label={t('booking', 'state')}
                   value={state}
                   onChange={(e) => setState(e.target.value)}
                   placeholder="NY"
@@ -417,7 +419,7 @@ export default function BookingPage() {
               </div>
               <div className="w-1/2">
                 <Input
-                  label="ZIP Code"
+                  label={t('booking', 'zipCode')}
                   value={zipCode}
                   onChange={(e) => setZipCode(e.target.value)}
                   placeholder="10001"
@@ -426,12 +428,12 @@ export default function BookingPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Special Instructions (optional)
+                  {t('booking', 'specialInstructions')}
                 </label>
                 <textarea
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
-                  placeholder="Gate code, parking instructions, areas to focus on..."
+                  placeholder={t('booking', 'instructionsPlaceholder')}
                   rows={3}
                   className="w-full h-12 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
                   style={{ height: 'auto', minHeight: '80px' }}
@@ -444,23 +446,23 @@ export default function BookingPage() {
         {/* Price Breakdown */}
         {selectedTime && (
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Price Breakdown</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('booking', 'priceBreakdown')}</h3>
             <div className="space-y-2">
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
                 <span>${cleaner.hourlyRate} x {duration} hours</span>
                 <span>${(cleaner.hourlyRate * duration).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Service fee (15%)</span>
+                <span>{t('booking', 'serviceFee')}</span>
                 <span>${(cleaner.hourlyRate * duration * 0.15).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Tax (8%)</span>
+                <span>{t('booking', 'tax')}</span>
                 <span>${(cleaner.hourlyRate * duration * 0.08).toFixed(2)}</span>
               </div>
               <div className="border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
                 <div className="flex justify-between font-bold text-lg text-gray-900 dark:text-white">
-                  <span>Total</span>
+                  <span>{t('common', 'total')}</span>
                   <span>${calculateTotal().toFixed(2)}</span>
                 </div>
               </div>
@@ -475,7 +477,7 @@ export default function BookingPage() {
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                Total
+                {t('common', 'total')}
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-bold text-gray-900 dark:text-white">${calculateTotal().toFixed(2)}</span>
@@ -496,7 +498,7 @@ export default function BookingPage() {
                 loading={submitting}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Confirm Booking
+                {t('booking', 'confirmBooking')}
               </Button>
             </div>
           </div>

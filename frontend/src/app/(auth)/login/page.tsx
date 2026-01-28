@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import Link from 'next/link';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button, Input, Alert } from '../../../components/ui';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
 
@@ -51,7 +53,7 @@ export default function LoginPage() {
           </Link>
           <div className="flex-1"></div>
           <Link href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'} className="text-sm font-medium text-primary hover:text-primary/80">
-            Sign up
+            {t('login', 'signUp')}
           </Link>
         </div>
 
@@ -63,9 +65,9 @@ export default function LoginPage() {
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 mx-auto">
                 <Home className="w-8 h-8 text-primary" />
               </div>
-              <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Welcome Back</h1>
+              <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">{t('login', 'welcomeBack')}</h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Sign in to your Serenity account
+                {t('login', 'signInToAccount')}
               </p>
             </div>
 
@@ -80,7 +82,7 @@ export default function LoginPage() {
             <form className="space-y-5" onSubmit={handleSubmit}>
               {/* Email */}
               <Input
-                label="Email Address"
+                label={t('login', 'emailAddress')}
                 id="email"
                 name="email"
                 placeholder="jane@example.com"
@@ -95,10 +97,10 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300" htmlFor="password">
-                    Password
+                    {t('login', 'password')}
                   </label>
                   <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                    Forgot password?
+                    {t('login', 'forgotPassword')}
                   </Link>
                 </div>
                 <Input
@@ -126,7 +128,7 @@ export default function LoginPage() {
                   disabled={loading}
                 />
                 <label className="ml-2 text-sm text-gray-600 dark:text-gray-400" htmlFor="rememberMe">
-                  Remember me for 30 days
+                  {t('login', 'rememberMe')}
                 </label>
               </div>
 
@@ -136,7 +138,7 @@ export default function LoginPage() {
                 fullWidth
                 loading={loading}
               >
-                Sign In
+                {t('login', 'signIn')}
               </Button>
             </form>
 
@@ -146,7 +148,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">{t('common', 'orContinueWith')}</span>
               </div>
             </div>
 
@@ -169,9 +171,9 @@ export default function LoginPage() {
             {/* Footer */}
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don&apos;t have an account?{' '}
+                {t('login', 'dontHaveAccount')}{' '}
                 <Link href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'} className="font-semibold text-primary hover:underline">
-                  Sign up
+                  {t('login', 'signUp')}
                 </Link>
               </p>
             </div>

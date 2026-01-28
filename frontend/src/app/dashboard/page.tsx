@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   ClipboardList,
   LogOut,
+  Shield,
 } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   Card,
   Badge,
@@ -53,6 +55,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -122,7 +125,7 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -132,6 +135,7 @@ export default function DashboardPage() {
   }
 
   const isCleaner = user.role === 'CLEANER';
+  const isAdmin = user.role === 'ADMIN';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -141,9 +145,12 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-3">
               <Home className="w-7 h-7 text-primary" />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Serenity</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</h1>
               {isCleaner && (
-                <Badge variant="primary">Cleaner</Badge>
+                <Badge variant="primary">{t('common', 'cleaner')}</Badge>
+              )}
+              {isAdmin && (
+                <Badge variant="info" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Admin</Badge>
               )}
             </div>
             <div className="flex items-center gap-4">
@@ -163,7 +170,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium"
               >
                 <LogOut className="w-4 h-4" />
-                Logout
+                {t('common', 'logout')}
               </button>
             </div>
           </div>
@@ -175,19 +182,19 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">
-            Welcome back, {user.firstName}!
+            {t('dashboard', 'welcomeBack')} {user.firstName}!
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
             {isCleaner
-              ? 'Manage your bookings and track your earnings'
-              : 'Ready to book a cleaner or manage your appointments?'}
+              ? t('dashboard', 'cleanerSubtitle')
+              : t('dashboard', 'customerSubtitle')}
           </p>
         </div>
 
         {/* Email Verification Alert */}
         {!user.emailVerified && (
-          <Alert variant="warning" title="Email Not Verified" className="mb-6">
-            Please check your email to verify your account.
+          <Alert variant="warning" title={t('dashboard', 'emailNotVerified')} className="mb-6">
+            {t('dashboard', 'verifyEmailMessage')}
           </Alert>
         )}
 
@@ -201,7 +208,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pendingBookings}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard', 'statPending')}</p>
                 </div>
               </div>
             </Card>
@@ -212,7 +219,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.upcomingBookings}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Upcoming</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard', 'statUpcoming')}</p>
                 </div>
               </div>
             </Card>
@@ -223,7 +230,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completedBookings}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard', 'statCompleted')}</p>
                 </div>
               </div>
             </Card>
@@ -234,7 +241,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">${stats.totalEarnings?.toFixed(0) || '0'}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Earnings</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard', 'statEarnings')}</p>
                 </div>
               </div>
             </Card>
@@ -242,16 +249,16 @@ export default function DashboardPage() {
         )}
 
         {/* Quick Actions */}
-        <div className={`grid grid-cols-1 ${isCleaner ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 mb-8`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {!isCleaner && (
             <Link href="/cleaners">
               <Card hoverable padding="md" className="h-full">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
                   <Search className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Find Cleaners</h3>
+                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('dashboard', 'findCleaners')}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Browse and book verified cleaners in your area
+                  {t('dashboard', 'findCleanersDesc')}
                 </p>
               </Card>
             </Link>
@@ -262,9 +269,9 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
                 <Calendar className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">My Bookings</h3>
+              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('dashboard', 'myBookings')}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {isCleaner ? 'Manage your cleaning jobs' : 'View and manage your appointments'}
+                {isCleaner ? t('dashboard', 'manageJobs') : t('dashboard', 'manageAppointments')}
               </p>
               {stats && stats.pendingBookings > 0 && (
                 <Badge variant="warning" className="mt-2">
@@ -279,9 +286,9 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
                 <MessageSquare className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Messages</h3>
+              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('dashboard', 'messages')}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Chat with {isCleaner ? 'customers' : 'cleaners'}
+                {isCleaner ? t('dashboard', 'chatWithCustomers') : t('dashboard', 'chatWithCleaners')}
               </p>
               {unreadMessages > 0 && (
                 <Badge variant="error" className="mt-2">
@@ -297,9 +304,9 @@ export default function DashboardPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
                   <DollarSign className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Earnings</h3>
+                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('dashboard', 'earnings')}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Track your earnings and performance
+                  {t('dashboard', 'trackEarnings')}
                 </p>
               </Card>
             </Link>
@@ -310,19 +317,34 @@ export default function DashboardPage() {
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3">
                 <Settings className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Settings</h3>
+              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('dashboard', 'settings')}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Update your profile and preferences
+                {t('dashboard', 'settingsDesc')}
               </p>
             </Card>
           </Link>
+
+          {isAdmin && (
+            <Link href="/admin">
+              <Card hoverable padding="md" className="h-full border-2 border-purple-200 dark:border-purple-800">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-3">
+                  <Shield className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('admin', 'title')}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('admin', 'dashboardSubtitle')}
+                </p>
+                <Badge variant="primary" className="mt-2">Admin</Badge>
+              </Card>
+            </Link>
+          )}
         </div>
 
         {/* Recent/Upcoming Bookings */}
         <Card padding="md">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              {isCleaner ? 'Upcoming Jobs' : 'Upcoming Bookings'}
+              {isCleaner ? t('dashboard', 'upcomingJobs') : t('dashboard', 'upcomingBookings')}
             </h3>
             <Link
               href={isCleaner ? '/cleaner/bookings' : '/bookings'}
@@ -335,10 +357,10 @@ export default function DashboardPage() {
           {bookings.length === 0 ? (
             <EmptyState
               icon={<ClipboardList className="w-8 h-8 text-gray-400" />}
-              title="No upcoming bookings"
+              title={t('dashboard', 'noUpcomingBookings')}
               description={
                 !isCleaner
-                  ? 'Book your first cleaning service to get started!'
+                  ? t('dashboard', 'bookFirstService')
                   : undefined
               }
             />
@@ -384,16 +406,16 @@ export default function DashboardPage() {
           <div className="mt-8 p-6 bg-gradient-to-r from-primary to-primary-light rounded-xl text-white">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold mb-2">Want to earn money cleaning?</h3>
+                <h3 className="text-xl font-bold mb-2">{t('dashboard', 'wantToEarnMoney')}</h3>
                 <p className="opacity-90">
-                  Join our network of professional cleaners and start earning today.
+                  {t('dashboard', 'joinNetwork')}
                 </p>
               </div>
               <Link
                 href="/cleaner/setup"
                 className="px-6 py-3 bg-white text-primary rounded-xl font-bold hover:bg-gray-100 transition-colors whitespace-nowrap"
               >
-                Become a Cleaner
+                {t('dashboard', 'becomeACleaner')}
               </Link>
             </div>
           </div>

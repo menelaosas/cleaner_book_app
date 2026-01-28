@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -22,11 +23,12 @@ interface Conversation {
     createdAt: string;
     senderId: string;
   } | null;
-  status: string;
+  status: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'COMPLETED' | 'CANCELLED';
   scheduledDate: string;
 }
 
 export default function MessagesPage() {
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -81,7 +83,7 @@ export default function MessagesPage() {
     if (diffDays === 0) {
       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     } else if (diffDays === 1) {
-      return 'Yesterday';
+      return t('common', 'yesterday');
     } else if (diffDays < 7) {
       return date.toLocaleDateString('en-US', { weekday: 'short' });
     } else {
@@ -92,7 +94,7 @@ export default function MessagesPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -109,16 +111,16 @@ export default function MessagesPage() {
           <div className="flex justify-between items-center py-4">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Home className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Serenity</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</span>
             </Link>
             <div className="flex items-center gap-4">
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {unreadCount} unread
+                  {unreadCount} {t('common', 'unread')}
                 </span>
               )}
               <Link href="/dashboard" className="text-sm text-primary hover:underline font-medium">
-                Back to Dashboard
+                {t('common', 'backToDashboard')}
               </Link>
             </div>
           </div>
@@ -128,9 +130,9 @@ export default function MessagesPage() {
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Messages</h1>
+          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">{t('messages', 'title')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Chat with your cleaners and customers
+            {t('messages', 'subtitle')}
           </p>
         </div>
 
@@ -139,10 +141,10 @@ export default function MessagesPage() {
           <Card padding="lg">
             <EmptyState
               icon={<MessageSquare className="w-8 h-8 text-gray-400" />}
-              title="No messages yet"
-              description="Messages with cleaners will appear here after booking"
+              title={t('messages', 'noMessagesYet')}
+              description={t('messages', 'messagesAfterBooking')}
               action={{
-                label: 'Find a Cleaner',
+                label: t('common', 'findACleaner'),
                 onClick: () => router.push('/cleaners'),
               }}
             />
@@ -189,7 +191,7 @@ export default function MessagesPage() {
                   </div>
                   {conversation.lastMessage && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                      {conversation.lastMessage.senderId === user.id ? 'You: ' : ''}
+                      {conversation.lastMessage.senderId === user.id ? `${t('common', 'you')}: ` : ''}
                       {conversation.lastMessage.content}
                     </p>
                   )}

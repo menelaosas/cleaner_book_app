@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -31,6 +32,7 @@ interface CompletedBooking {
 
 export default function CleanerEarningsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [completedBookings, setCompletedBookings] = useState<CompletedBooking[]>([]);
@@ -90,7 +92,7 @@ export default function CleanerEarningsPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -109,14 +111,14 @@ export default function CleanerEarningsPage() {
           <div className="flex justify-between items-center py-4">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Home className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Serenity</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/cleaner/bookings" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
-                Bookings
+                {t('common', 'bookings')}
               </Link>
               <Link href="/dashboard" className="text-sm text-primary hover:underline font-medium">
-                Dashboard
+                {t('common', 'dashboard')}
               </Link>
             </div>
           </div>
@@ -126,8 +128,8 @@ export default function CleanerEarningsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">Earnings</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track your earnings and performance</p>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerEarnings', 'title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('cleanerEarnings', 'subtitle')}</p>
         </div>
 
         {/* Stats Cards */}
@@ -139,7 +141,7 @@ export default function CleanerEarningsPage() {
                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Earnings</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'totalEarnings')}</p>
                 <p className="text-2xl font-bold text-green-600">${totalEarnings.toFixed(2)}</p>
               </div>
             </div>
@@ -152,7 +154,7 @@ export default function CleanerEarningsPage() {
                 <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Completed Jobs</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'completedJobs')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.completedBookings || 0}</p>
               </div>
             </div>
@@ -165,7 +167,7 @@ export default function CleanerEarningsPage() {
                 <Star className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Average Rating</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'averageRating')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {stats?.averageRating ? stats.averageRating.toFixed(1) : 'N/A'}
                 </p>
@@ -180,7 +182,7 @@ export default function CleanerEarningsPage() {
                 <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Reviews</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'totalReviews')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.totalReviews || 0}</p>
               </div>
             </div>
@@ -189,22 +191,22 @@ export default function CleanerEarningsPage() {
 
         {/* Earnings Breakdown */}
         <Card padding="md" className="mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Earnings Breakdown</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('cleanerEarnings', 'earningsBreakdown')}</h2>
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Gross Revenue</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('cleanerEarnings', 'grossRevenue')}</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 ${completedBookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Platform Fee (15%)</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('cleanerEarnings', 'platformFee')}</span>
               <span className="font-medium text-red-500">
                 -${(completedBookings.reduce((sum, b) => sum + b.totalAmount, 0) * 0.15).toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span className="font-bold text-gray-900 dark:text-white">Your Earnings</span>
+              <span className="font-bold text-gray-900 dark:text-white">{t('cleanerEarnings', 'yourEarnings')}</span>
               <span className="font-bold text-green-600 text-xl">${totalEarnings.toFixed(2)}</span>
             </div>
           </div>
@@ -212,23 +214,23 @@ export default function CleanerEarningsPage() {
 
         {/* Recent Completed Jobs */}
         <Card padding="md">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Recent Completed Jobs</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">{t('cleanerEarnings', 'recentCompletedJobs')}</h2>
           {completedBookings.length === 0 ? (
             <EmptyState
               icon={<ClipboardList className="w-8 h-8 text-gray-400" />}
-              title="No completed jobs yet"
-              description="Complete your first job to see earnings here"
+              title={t('cleanerEarnings', 'noCompletedJobs')}
+              description={t('cleanerEarnings', 'completeFirstJob')}
             />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Customer</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Service</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Amount</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Your Earnings</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'dateColumn')}</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'customerColumn')}</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'serviceColumn')}</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'amountColumn')}</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('cleanerEarnings', 'yourEarningsColumn')}</th>
                   </tr>
                 </thead>
                 <tbody>

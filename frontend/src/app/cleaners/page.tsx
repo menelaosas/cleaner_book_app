@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Home, Search, Star, CheckCircle, X } from 'lucide-react';
 import { Card, Badge, Input, Button, LoadingSpinner, EmptyState, Avatar } from '../../components/ui';
 
@@ -26,6 +27,7 @@ interface Cleaner {
 
 export default function CleanersPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +117,7 @@ export default function CleanersPage() {
           <div className="flex justify-between items-center py-4">
             <Link href="/" className="flex items-center gap-2">
               <Home className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Serenity</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</span>
             </Link>
             <Link href="/dashboard" className="text-sm text-primary hover:underline font-medium">
               My Dashboard
@@ -127,8 +129,8 @@ export default function CleanersPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">Find a Cleaner</h1>
-          <p className="text-gray-600 dark:text-gray-400">Browse verified cleaning professionals in your area</p>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleaners', 'title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('cleaners', 'subtitle')}</p>
         </div>
 
         {/* Search & Filters */}
@@ -136,7 +138,7 @@ export default function CleanersPage() {
           {/* Search Bar */}
           <div className="mb-4">
             <Input
-              placeholder="Search by name..."
+              placeholder={t('cleaners', 'searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               leftIcon={<Search className="w-5 h-5" />}
@@ -145,7 +147,7 @@ export default function CleanersPage() {
 
           {/* Filter Tags */}
           <div>
-            <p className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Filter by specialty:</p>
+            <p className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{t('cleaners', 'filterBySpecialty')}</p>
             <div className="flex flex-wrap gap-2">
               {availableTags.map(tag => (
                 <button
@@ -176,7 +178,7 @@ export default function CleanersPage() {
         {/* Results Count */}
         <div className="mb-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Showing {filteredCleaners.length} cleaner{filteredCleaners.length !== 1 ? 's' : ''}
+            {t('cleaners', 'showing')} {filteredCleaners.length} cleaner{filteredCleaners.length !== 1 ? 's' : ''}
           </p>
         </div>
 
@@ -237,13 +239,13 @@ export default function CleanersPage() {
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {cleaner.yearsExperience}y exp.
+                      {cleaner.yearsExperience}{t('cleaners', 'yExp')}
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">
                         ${cleaner.hourlyRate}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">per hour</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{t('common', 'perHour')}</div>
                     </div>
                   </div>
                 </Card>
@@ -257,8 +259,8 @@ export default function CleanersPage() {
           <Card padding="lg">
             <EmptyState
               icon={<Search className="w-8 h-8 text-gray-400" />}
-              title="No cleaners found"
-              description="Try adjusting your search or filters"
+              title={t('cleaners', 'noCleanersFound')}
+              description={t('cleaners', 'tryAdjusting')}
               action={{
                 label: 'Clear filters',
                 onClick: () => {

@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Sparkles, Globe } from 'lucide-react';
+import { Search, Sparkles, Lightbulb } from 'lucide-react';
 import { Button } from '../components/ui';
+import { LanguageToggle } from '../components/LanguageToggle';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden">
       {/* Background Image */}
@@ -20,17 +24,20 @@ export default function Home() {
 
       {/* Header */}
       <header className="relative z-10 flex w-full items-center justify-center p-6 pt-12">
-        <div className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 backdrop-blur-md border border-white/10 shadow-sm">
-          <Sparkles className="w-5 h-5 text-white" />
-          <span className="text-sm font-bold tracking-wide text-white uppercase">Serenity</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 backdrop-blur-md border border-white/10 shadow-sm">
+            <Sparkles className="w-5 h-5 text-white" />
+            <span className="text-sm font-bold tracking-wide text-white uppercase">{t('common', 'serenity')}</span>
+          </div>
+          <Link
+            href="/cleaning-tips"
+            className="flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-1.5 backdrop-blur-md border border-white/10 shadow-sm text-white transition-all hover:bg-white/30 active:scale-95"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            <span className="text-xs font-bold tracking-wide">{t('landing', 'cleaningTipsLink')}</span>
+          </Link>
         </div>
-        <button
-          aria-label="Change Language"
-          className="absolute right-6 top-12 flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-2 text-white backdrop-blur-md border border-white/10 shadow-sm transition-all hover:bg-white/30 active:scale-95"
-        >
-          <Globe className="w-4 h-4" />
-          <span className="text-xs font-bold tracking-wide">EN</span>
-        </button>
+        <LanguageToggle className="absolute right-6 top-12" />
       </header>
 
       <div className="flex-1"></div>
@@ -48,14 +55,14 @@ export default function Home() {
           {/* Title */}
           <div className="text-center mb-2">
             <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-              Experience the Joy of a Spotless Home
+              {t('landing', 'title')}
             </h1>
           </div>
 
           {/* Subtitle */}
           <div className="text-center mb-8 px-2">
             <p className="text-base font-normal leading-relaxed text-gray-500 dark:text-gray-400">
-              Connect with the best <strong>Home Cleaning Professionals</strong> in your area to book quick or thorough cleaning for your <strong>Home</strong>.
+              {t('landing', 'subtitle1')} <strong>{t('landing', 'subtitle2')}</strong> {t('landing', 'subtitle3')} <strong>{t('landing', 'subtitle4')}</strong>.
             </p>
           </div>
 
@@ -67,7 +74,7 @@ export default function Home() {
                 fullWidth
                 leftIcon={<Search className="w-5 h-5" />}
               >
-                Find a Cleaner
+                {t('landing', 'findCleaner')}
               </Button>
             </Link>
 
@@ -78,7 +85,7 @@ export default function Home() {
                 fullWidth
                 leftIcon={<Sparkles className="w-5 h-5" />}
               >
-                Join as a Cleaner
+                {t('landing', 'joinAsCleaner')}
               </Button>
             </Link>
           </div>
@@ -86,12 +93,12 @@ export default function Home() {
           {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Already have an account?{' '}
+              {t('landing', 'alreadyHaveAccount')}{' '}
               <Link
                 href="/login"
                 className="font-bold text-primary hover:underline ml-0.5"
               >
-                Sign In
+                {t('landing', 'signIn')}
               </Link>
             </p>
           </div>

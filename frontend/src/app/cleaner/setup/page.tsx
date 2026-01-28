@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import axios from 'axios';
 import {
   ArrowLeft,
@@ -25,6 +26,7 @@ import { Button, Card, LoadingSpinner, Alert } from '../../../components/ui';
 export default function CleanerSetupPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
@@ -73,8 +75,8 @@ export default function CleanerSetupPage() {
             'MORNING': 'Morning', 'AFTERNOON': 'Afternoon', 'EVENING': 'Evening'
           };
 
-          const days = [...new Set(availabilities.map((a: any) => dayMap[a.dayOfWeek]).filter(Boolean))];
-          const shifts = [...new Set(availabilities.map((a: any) => shiftMap[a.timeSlot]).filter(Boolean))];
+          const days = Array.from(new Set(availabilities.map((a: any) => dayMap[a.dayOfWeek]).filter(Boolean)));
+          const shifts = Array.from(new Set(availabilities.map((a: any) => shiftMap[a.timeSlot]).filter(Boolean)));
 
           setFormData({
             bio: profile.bio || '',
@@ -100,11 +102,11 @@ export default function CleanerSetupPage() {
   }, [user]);
 
   const specialtyOptions = [
-    { value: 'REGULAR', label: 'Regular Cleaning' },
-    { value: 'DEEP_CLEAN', label: 'Deep Clean' },
-    { value: 'MOVE_IN_OUT', label: 'Move-in/out' },
-    { value: 'POST_CONSTRUCTION', label: 'Post-Construction' },
-    { value: 'COMMERCIAL', label: 'Commercial' },
+    { value: 'REGULAR', label: t('cleanerSetup', 'regularCleaning') },
+    { value: 'DEEP_CLEAN', label: t('cleanerSetup', 'deepClean') },
+    { value: 'MOVE_IN_OUT', label: t('cleanerSetup', 'moveInOut') },
+    { value: 'POST_CONSTRUCTION', label: t('cleanerSetup', 'postConstruction') },
+    { value: 'COMMERCIAL', label: t('cleanerSetup', 'commercial') },
   ];
 
   const cityOptions = [
@@ -164,14 +166,14 @@ export default function CleanerSetupPage() {
 
       if (hasExistingProfile) {
         await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/cleaners/me`, submitData, { headers });
-        alert('Profile updated successfully!');
+        alert(t('cleanerSetup', 'profileUpdated'));
       } else {
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/cleaners`, submitData, { headers });
-        alert('Profile created successfully!');
+        alert(t('cleanerSetup', 'profileCreated'));
       }
       router.push('/cleaner/dashboard');
     } catch (error: any) {
-      alert('Failed to save profile: ' + (error.response?.data?.message || 'Please try again'));
+      alert(t('cleanerSetup', 'failedSave') + (error.response?.data?.message || 'Please try again'));
     } finally {
       setLoading(false);
     }
@@ -184,7 +186,7 @@ export default function CleanerSetupPage() {
   if (authLoading || !user || fetchingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text={fetchingProfile ? 'Loading profile...' : 'Loading...'} />
+        <LoadingSpinner size="xl" text={fetchingProfile ? 'Loading profile...' : t('common', 'loading')} />
       </div>
     );
   }
@@ -207,7 +209,7 @@ export default function CleanerSetupPage() {
             <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">{hasExistingProfile ? 'Edit Profile' : 'Profile Setup'}</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">{hasExistingProfile ? t('cleanerSetup', 'editProfile') : t('cleanerSetup', 'profileSetup')}</h1>
             <div className="w-10"></div>
           </div>
         </div>
@@ -218,7 +220,7 @@ export default function CleanerSetupPage() {
         <div className="mb-8">
           <div className="flex justify-between items-end mb-2">
             <span className="text-xs font-medium uppercase tracking-wider text-primary">
-              Step {currentStep} of 4
+              {t('cleanerSetup', 'step')} {currentStep} {t('cleanerSetup', 'stepOf')} 4
             </span>
             <span className="text-sm font-bold text-gray-900 dark:text-white">{progress.toFixed(0)}%</span>
           </div>
@@ -237,13 +239,13 @@ export default function CleanerSetupPage() {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <User className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Tell us about yourself</h2>
-              <p className="text-gray-600 dark:text-gray-400">Help clients get to know you</p>
+              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerSetup', 'tellAboutYourself')}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'helpClientsKnow')}</p>
             </div>
 
             {/* Years of Experience */}
             <Card padding="md">
-              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">Years of Experience</label>
+              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'yearsOfExperience')}</label>
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setFormData(prev => ({ ...prev, yearsExperience: Math.max(0, prev.yearsExperience - 1) }))}
@@ -253,7 +255,7 @@ export default function CleanerSetupPage() {
                 </button>
                 <div className="flex-1 text-center">
                   <div className="text-3xl font-bold text-gray-900 dark:text-white">{formData.yearsExperience}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">years</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{t('common', 'years')}</div>
                 </div>
                 <button
                   onClick={() => setFormData(prev => ({ ...prev, yearsExperience: prev.yearsExperience + 1 }))}
@@ -267,25 +269,25 @@ export default function CleanerSetupPage() {
             {/* Bio */}
             <Card padding="md">
               <div className="flex justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'bio')}</label>
                 <span className="text-xs text-gray-400">{formData.bio.length}/300</span>
               </div>
               <textarea
                 value={formData.bio}
                 onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                placeholder="Tell clients a little about yourself and your cleaning style..."
+                placeholder={t('cleanerSetup', 'bioPlaceholder')}
                 maxLength={300}
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-3 min-h-[120px] resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-900 dark:text-white"
               />
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex gap-1 items-center">
                 <Lightbulb className="w-3.5 h-3.5" />
-                Mention your attention to detail or specialty areas.
+                {t('cleanerSetup', 'bioTip')}
               </p>
             </Card>
 
             {/* Specialties */}
             <Card padding="md">
-              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">Specialties</label>
+              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'specialties')}</label>
               <div className="grid grid-cols-2 gap-3">
                 {specialtyOptions.map(specialty => (
                   <button
@@ -312,12 +314,12 @@ export default function CleanerSetupPage() {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Service Areas</h2>
-              <p className="text-gray-600 dark:text-gray-400">Where are you willing to work?</p>
+              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerSetup', 'serviceAreas')}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'whereWillingToWork')}</p>
             </div>
 
             <Card padding="md">
-              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">Cities/Neighborhoods</label>
+              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'citiesNeighborhoods')}</label>
               <div className="flex flex-wrap gap-2 mb-4">
                 {formData.serviceAreas.map(area => (
                   <div
@@ -351,7 +353,7 @@ export default function CleanerSetupPage() {
 
             <Card padding="md">
               <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">
-                Max Travel Distance: {formData.maxTravelDistance} miles
+                {t('cleanerSetup', 'maxTravelDistance')} {formData.maxTravelDistance} {t('cleanerSetup', 'miles')}
               </label>
               <input
                 type="range"
@@ -363,8 +365,8 @@ export default function CleanerSetupPage() {
                 className="w-full accent-primary"
               />
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
-                <span>5 mi</span>
-                <span>30 mi</span>
+                <span>5 {t('cleanerSetup', 'mi')}</span>
+                <span>30 {t('cleanerSetup', 'mi')}</span>
               </div>
             </Card>
           </div>
@@ -377,12 +379,12 @@ export default function CleanerSetupPage() {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Your Availability</h2>
-              <p className="text-gray-600 dark:text-gray-400">When are you available to work?</p>
+              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerSetup', 'yourAvailability')}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'whenAvailable')}</p>
             </div>
 
             <Card padding="md">
-              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">Available Days</label>
+              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'availableDays')}</label>
               <div className="flex justify-between gap-1 mb-6">
                 {daysOfWeek.map(day => (
                   <button
@@ -401,7 +403,7 @@ export default function CleanerSetupPage() {
                 ))}
               </div>
 
-              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">Preferred Shifts</label>
+              <label className="block text-sm font-medium mb-4 text-gray-700 dark:text-gray-300">{t('cleanerSetup', 'preferredShifts')}</label>
               <div className="grid grid-cols-3 gap-3">
                 {shifts.map(shift => (
                   <button
@@ -414,7 +416,7 @@ export default function CleanerSetupPage() {
                     }`}
                   >
                     {getShiftIcon(shift)}
-                    {shift}
+                    {shift === 'Morning' ? t('cleanerSetup', 'morning') : shift === 'Afternoon' ? t('cleanerSetup', 'afternoon') : t('cleanerSetup', 'evening')}
                   </button>
                 ))}
               </div>
@@ -429,8 +431,8 @@ export default function CleanerSetupPage() {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Set Your Rate</h2>
-              <p className="text-gray-600 dark:text-gray-400">What&apos;s your hourly rate?</p>
+              <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerSetup', 'setYourRate')}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'whatsYourRate')}</p>
             </div>
 
             <Card padding="lg">
@@ -438,7 +440,7 @@ export default function CleanerSetupPage() {
                 <div className="text-6xl font-bold text-primary mb-2">
                   ${formData.hourlyRate}
                 </div>
-                <div className="text-gray-500 dark:text-gray-400">per hour</div>
+                <div className="text-gray-500 dark:text-gray-400">{t('common', 'perHour')}</div>
               </div>
 
               <input
@@ -457,29 +459,29 @@ export default function CleanerSetupPage() {
               </div>
 
               <Alert variant="info" className="mt-6">
-                The average rate in your area is $35-45/hour. You can adjust this anytime.
+                {t('cleanerSetup', 'averageRateInfo')}
               </Alert>
             </Card>
 
             {/* Summary */}
             <Card padding="md">
-              <h3 className="font-bold mb-4 text-gray-900 dark:text-white">Profile Summary</h3>
+              <h3 className="font-bold mb-4 text-gray-900 dark:text-white">{t('cleanerSetup', 'profileSummary')}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Experience:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formData.yearsExperience} years</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'experienceLabel')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formData.yearsExperience} {t('common', 'years')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Specialties:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formData.specialties.length} selected</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'specialtiesLabel')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formData.specialties.length} {t('cleanerSetup', 'selected')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Service Areas:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formData.serviceAreas.length} locations</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'serviceAreasLabel')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formData.serviceAreas.length} {t('cleanerSetup', 'locations')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Available:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formData.availableDays.length} days/week</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('cleanerSetup', 'availableLabel')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formData.availableDays.length} {t('cleanerSetup', 'daysWeek')}</span>
                 </div>
               </div>
             </Card>
@@ -492,17 +494,17 @@ export default function CleanerSetupPage() {
         <div className="max-w-2xl mx-auto flex gap-3">
           {currentStep > 1 && (
             <Button variant="outline" onClick={prevStep}>
-              Back
+              {t('cleanerSetup', 'back')}
             </Button>
           )}
 
           {currentStep < 4 ? (
             <Button fullWidth onClick={nextStep} rightIcon={<ArrowRight className="w-5 h-5" />}>
-              Continue
+              {t('cleanerSetup', 'continue')}
             </Button>
           ) : (
             <Button fullWidth onClick={handleSubmit} loading={loading} rightIcon={<Check className="w-5 h-5" />}>
-              {hasExistingProfile ? 'Save Changes' : 'Complete Setup'}
+              {hasExistingProfile ? t('cleanerSetup', 'saveChanges') : t('cleanerSetup', 'completeSetup')}
             </Button>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import Link from 'next/link';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -26,7 +27,7 @@ interface BookingInfo {
   id: string;
   scheduledDate: string;
   scheduledTime: string;
-  status: string;
+  status: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'AWAITING_CONFIRMATION' | 'COMPLETED' | 'CANCELLED';
   cleaningType: string;
   user: {
     id: string;
@@ -43,6 +44,7 @@ interface BookingInfo {
 }
 
 export default function ConversationPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -90,7 +92,7 @@ export default function ConversationPage() {
     } catch (error: any) {
       console.error('Failed to fetch booking:', error);
       if (error.response?.status === 404 || error.response?.status === 403) {
-        toast.error('Conversation not found');
+        toast.error(t('conversation', 'conversationNotFound'));
         router.push('/messages');
       }
     }
@@ -128,7 +130,7 @@ export default function ConversationPage() {
       setNewMessage('');
       inputRef.current?.focus();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to send message');
+      toast.error(error.response?.data?.message || t('conversation', 'failedToSend'));
     } finally {
       setSending(false);
     }
@@ -151,9 +153,9 @@ export default function ConversationPage() {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('common', 'today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('common', 'yesterday');
     } else {
       return date.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -176,7 +178,7 @@ export default function ConversationPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -228,7 +230,7 @@ export default function ConversationPage() {
               href={`/bookings`}
               className="text-sm text-primary hover:underline"
             >
-              View Booking
+              {t('conversation', 'viewBooking')}
             </Link>
           </div>
         </div>
@@ -243,7 +245,7 @@ export default function ConversationPage() {
                 <Send className="w-7 h-7 text-gray-400" />
               </div>
               <p className="text-gray-600 dark:text-gray-400">
-                No messages yet. Start the conversation!
+                {t('conversation', 'noMessagesYet')}
               </p>
             </div>
           ) : (
@@ -305,7 +307,7 @@ export default function ConversationPage() {
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t('conversation', 'typeMessage')}
               className="flex-1 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               disabled={sending}
             />

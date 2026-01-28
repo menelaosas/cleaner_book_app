@@ -17,6 +17,7 @@ import bookingRoutes from './routes/booking.routes';
 import paymentRoutes from './routes/payment.routes';
 import reviewRoutes from './routes/review.routes';
 import messageRoutes from './routes/message.routes';
+import adminRoutes from './routes/admin.routes';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware';
@@ -125,6 +126,7 @@ class App {
     apiRouter.use('/payments', paymentRoutes);
     apiRouter.use('/reviews', reviewRoutes);
     apiRouter.use('/messages', messageRoutes);
+    apiRouter.use('/admin', adminRoutes);
 
     this.app.use('/api', apiRouter);
   }

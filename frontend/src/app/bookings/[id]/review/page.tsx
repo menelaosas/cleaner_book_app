@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useLanguage } from '../../../../contexts/LanguageContext';
 import Link from 'next/link';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -25,6 +26,7 @@ interface Booking {
 }
 
 export default function ReviewPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -62,13 +64,13 @@ export default function ReviewPage() {
       const bookingData = response.data.data;
 
       if (bookingData.status !== 'COMPLETED') {
-        toast.error('Can only review completed bookings');
+        toast.error(t('review', 'onlyCompletedError'));
         router.push('/bookings');
         return;
       }
 
       if (bookingData.review) {
-        toast.error('You have already reviewed this booking');
+        toast.error(t('review', 'alreadyReviewedError'));
         router.push('/bookings');
         return;
       }
@@ -76,7 +78,7 @@ export default function ReviewPage() {
       setBooking(bookingData);
     } catch (error: any) {
       console.error('Failed to fetch booking:', error);
-      toast.error('Booking not found');
+      toast.error(t('review', 'bookingNotFound'));
       router.push('/bookings');
     } finally {
       setLoading(false);
@@ -86,7 +88,7 @@ export default function ReviewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating) {
-      toast.error('Please select a rating');
+      toast.error(t('review', 'selectRating'));
       return;
     }
 
@@ -106,7 +108,7 @@ export default function ReviewPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success('Review submitted successfully!');
+      toast.success(t('review', 'reviewSuccess'));
       router.push('/bookings');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to submit review');
@@ -121,11 +123,11 @@ export default function ReviewPage() {
 
   const getRatingLabel = (value: number) => {
     switch (value) {
-      case 1: return 'Poor';
-      case 2: return 'Fair';
-      case 3: return 'Good';
-      case 4: return 'Very Good';
-      case 5: return 'Excellent';
+      case 1: return t('review', 'ratingPoor');
+      case 2: return t('review', 'ratingFair');
+      case 3: return t('review', 'ratingGood');
+      case 4: return t('review', 'ratingVeryGood');
+      case 5: return t('review', 'ratingExcellent');
       default: return '';
     }
   };
@@ -133,7 +135,7 @@ export default function ReviewPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -154,7 +156,7 @@ export default function ReviewPage() {
             >
               <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white">Leave a Review</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">{t('review', 'leaveReview')}</h1>
             <div className="w-10"></div>
           </div>
         </div>
@@ -174,7 +176,7 @@ export default function ReviewPage() {
                 {booking.cleaner.firstName} {booking.cleaner.lastName}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                {formatCleaningType(booking.cleaningType)} on{' '}
+                {formatCleaningType(booking.cleaningType)} {t('common', 'on')}{' '}
                 {new Date(booking.scheduledDate).toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -189,7 +191,7 @@ export default function ReviewPage() {
         <form onSubmit={handleSubmit}>
           {/* Overall Rating */}
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-white">Overall Rating</h3>
+            <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-white">{t('review', 'overallRating')}</h3>
             <div className="flex flex-col items-center">
               <StarRating value={rating} onChange={setRating} size="lg" />
               <p className="text-gray-600 dark:text-gray-400 mt-2">
@@ -200,18 +202,18 @@ export default function ReviewPage() {
 
           {/* Detailed Ratings */}
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Rate the Details</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('review', 'rateDetails')}</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900 dark:text-white">Punctuality</span>
+                <span className="font-medium text-gray-900 dark:text-white">{t('review', 'punctuality')}</span>
                 <StarRating value={punctuality} onChange={setPunctuality} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900 dark:text-white">Professionalism</span>
+                <span className="font-medium text-gray-900 dark:text-white">{t('review', 'professionalism')}</span>
                 <StarRating value={professionalism} onChange={setProfessionalism} size="sm" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900 dark:text-white">Quality of Work</span>
+                <span className="font-medium text-gray-900 dark:text-white">{t('review', 'qualityOfWork')}</span>
                 <StarRating value={quality} onChange={setQuality} size="sm" />
               </div>
             </div>
@@ -219,17 +221,17 @@ export default function ReviewPage() {
 
           {/* Written Review */}
           <Card padding="md" className="mb-6">
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Write a Review (Optional)</h3>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('review', 'writeReview')}</h3>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Share your experience with this cleaner..."
+              placeholder={t('review', 'reviewPlaceholder')}
               rows={5}
               maxLength={500}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all"
             />
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {comment.length}/500 characters
+              {comment.length}/500 {t('review', 'characters')}
             </p>
           </Card>
 
@@ -240,7 +242,7 @@ export default function ReviewPage() {
             size="lg"
             loading={submitting}
           >
-            Submit Review
+            {t('review', 'submitReview')}
           </Button>
         </form>
       </main>

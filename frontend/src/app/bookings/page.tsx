@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -30,6 +31,7 @@ interface Booking {
 }
 
 export default function BookingsPage() {
+  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { socket } = useSocket();
@@ -83,7 +85,7 @@ export default function BookingsPage() {
   };
 
   const handleCancel = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    if (!confirm(t('bookings', 'cancelBooking'))) return;
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -92,7 +94,7 @@ export default function BookingsPage() {
         { reason: 'Cancelled by customer' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Booking cancelled successfully');
+      toast.success(t('bookings', 'cancelSuccess'));
       fetchBookings();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to cancel booking');
@@ -100,7 +102,7 @@ export default function BookingsPage() {
   };
 
   const handleConfirmCompletion = async (bookingId: string) => {
-    if (!confirm('Confirm that the cleaning has been completed to your satisfaction?')) return;
+    if (!confirm(t('bookings', 'confirmCompletionPrompt'))) return;
 
     try {
       const token = localStorage.getItem('accessToken');
@@ -109,7 +111,7 @@ export default function BookingsPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Booking confirmed as completed!');
+      toast.success(t('bookings', 'completionSuccess'));
       fetchBookings();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to confirm completion');
@@ -117,7 +119,7 @@ export default function BookingsPage() {
   };
 
   const handleDispute = async (bookingId: string) => {
-    const reason = prompt('Please describe the issue:');
+    const reason = prompt(t('bookings', 'disputePrompt'));
     if (reason === null) return;
 
     try {
@@ -127,7 +129,7 @@ export default function BookingsPage() {
         { reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Dispute submitted. The cleaner has been notified.');
+      toast.success(t('bookings', 'disputeSuccess'));
       fetchBookings();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to submit dispute');
@@ -166,7 +168,7 @@ export default function BookingsPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -183,10 +185,10 @@ export default function BookingsPage() {
           <div className="flex justify-between items-center py-4">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Home className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Serenity</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</span>
             </Link>
             <Link href="/dashboard" className="text-sm text-primary hover:underline font-medium">
-              Back to Dashboard
+              {t('common', 'backToDashboard')}
             </Link>
           </div>
         </div>
@@ -195,21 +197,21 @@ export default function BookingsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">My Bookings</h1>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t('bookings', 'title')}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            View and manage your cleaning appointments
+            {t('bookings', 'subtitle')}
           </p>
         </div>
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
-            { value: 'all', label: 'All' },
-            { value: 'upcoming', label: 'Upcoming' },
-            { value: 'past', label: 'Past' },
-            { value: 'PENDING', label: 'Pending' },
-            { value: 'CONFIRMED', label: 'Confirmed' },
-            { value: 'COMPLETED', label: 'Completed' },
+            { value: 'all', label: t('bookings', 'all') },
+            { value: 'upcoming', label: t('bookings', 'upcoming') },
+            { value: 'past', label: t('bookings', 'past') },
+            { value: 'PENDING', label: t('bookings', 'pending') },
+            { value: 'CONFIRMED', label: t('bookings', 'confirmed') },
+            { value: 'COMPLETED', label: t('bookings', 'completed') },
           ].map(tab => (
             <button
               key={tab.value}
@@ -230,14 +232,14 @@ export default function BookingsPage() {
           <Card padding="lg">
             <EmptyState
               icon={<Calendar className="w-8 h-8 text-gray-400" />}
-              title="No bookings found"
+              title={t('bookings', 'noBookingsFound')}
               description={
                 filter === 'all'
-                  ? "You haven't made any bookings yet"
+                  ? t('bookings', 'noBookingsYet')
                   : `No ${filter.toLowerCase()} bookings`
               }
               action={{
-                label: 'Find a Cleaner',
+                label: t('common', 'findACleaner'),
                 onClick: () => router.push('/cleaners'),
               }}
             />
@@ -260,7 +262,7 @@ export default function BookingsPage() {
                       {booking.address}, {booking.city}, {booking.state}
                     </p>
                     <p className="text-sm">
-                      <span className="text-gray-500 dark:text-gray-400">Cleaner: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('bookings', 'cleanerLabel')}</span>
                       <Link
                         href={`/cleaners/${booking.cleaner.id}`}
                         className="text-primary hover:underline font-medium"
@@ -276,13 +278,13 @@ export default function BookingsPage() {
                       ${booking.totalAmount.toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      {booking.duration} hours
+                      {booking.duration} {t('common', 'hours')}
                     </div>
                     {['PENDING', 'CONFIRMED'].includes(booking.status) && (
                       <div className="flex gap-2 justify-end">
                         <Link href={`/messages/${booking.id}`}>
                           <Button variant="outline" size="sm" leftIcon={<MessageSquare className="w-4 h-4" />}>
-                            Message
+                            {t('common', 'message')}
                           </Button>
                         </Link>
                         <Button
@@ -292,19 +294,19 @@ export default function BookingsPage() {
                           leftIcon={<XCircle className="w-4 h-4" />}
                           className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
-                          Cancel
+                          {t('common', 'cancel')}
                         </Button>
                       </div>
                     )}
                     {booking.status === 'COMPLETED' && (
                       <Link href={`/bookings/${booking.id}/review`}>
                         <Button size="sm" leftIcon={<Star className="w-4 h-4" />}>
-                          Leave Review
+                          {t('bookings', 'leaveReview')}
                         </Button>
                       </Link>
                     )}
                     {booking.status === 'IN_PROGRESS' && (
-                      <Badge variant="primary">Cleaning in Progress</Badge>
+                      <Badge variant="primary">{t('bookings', 'cleaningInProgress')}</Badge>
                     )}
                     {booking.status === 'AWAITING_CONFIRMATION' && (
                       <div className="flex gap-2 justify-end">
@@ -315,14 +317,14 @@ export default function BookingsPage() {
                           leftIcon={<AlertTriangle className="w-4 h-4" />}
                           className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                         >
-                          Dispute
+                          {t('bookings', 'dispute')}
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handleConfirmCompletion(booking.id)}
                           leftIcon={<CheckCircle className="w-4 h-4" />}
                         >
-                          Confirm Completed
+                          {t('bookings', 'confirmCompleted')}
                         </Button>
                       </div>
                     )}

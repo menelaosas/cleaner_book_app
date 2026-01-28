@@ -8,6 +8,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Home, Calendar, DollarSign, MessageSquare, Play, CheckCircle, XCircle } from 'lucide-react';
 import { Card, Badge, StatusBadge, Button, LoadingSpinner, EmptyState } from '../../../components/ui';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface Booking {
   id: string;
@@ -33,6 +34,7 @@ interface Booking {
 export default function CleanerBookingsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -118,7 +120,7 @@ export default function CleanerBookingsPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text={t('common', 'loading')} />
       </div>
     );
   }
@@ -135,14 +137,14 @@ export default function CleanerBookingsPage() {
           <div className="flex justify-between items-center py-4">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Home className="w-7 h-7 text-primary" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Serenity</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('common', 'serenity')}</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/cleaner/earnings" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
-                Earnings
+                {t('common', 'earnings')}
               </Link>
               <Link href="/dashboard" className="text-sm text-primary hover:underline font-medium">
-                Dashboard
+                {t('common', 'dashboard')}
               </Link>
             </div>
           </div>
@@ -152,17 +154,17 @@ export default function CleanerBookingsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">My Bookings</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your cleaning appointments</p>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{t('cleanerBookings', 'title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('cleanerBookings', 'subtitle')}</p>
         </div>
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
-            { value: 'all', label: 'All' },
-            { value: 'pending', label: 'Pending Requests' },
-            { value: 'upcoming', label: 'Upcoming' },
-            { value: 'completed', label: 'Completed' },
+            { value: 'all', label: t('cleanerBookings', 'all') },
+            { value: 'pending', label: t('cleanerBookings', 'pendingRequests') },
+            { value: 'upcoming', label: t('cleanerBookings', 'upcoming') },
+            { value: 'completed', label: t('cleanerBookings', 'completed') },
           ].map(tab => (
             <button
               key={tab.value}
@@ -188,13 +190,13 @@ export default function CleanerBookingsPage() {
           <Card padding="lg">
             <EmptyState
               icon={<Calendar className="w-8 h-8 text-gray-400" />}
-              title="No bookings found"
+              title={t('cleanerBookings', 'noBookingsFound')}
               description={
                 filter === 'pending'
-                  ? 'No pending booking requests'
+                  ? t('cleanerBookings', 'noPendingRequests')
                   : filter === 'upcoming'
-                  ? 'No upcoming bookings'
-                  : 'No bookings yet'
+                  ? t('cleanerBookings', 'noUpcomingBookings')
+                  : t('cleanerBookings', 'noBookingsYet')
               }
             />
           </Card>
@@ -216,7 +218,7 @@ export default function CleanerBookingsPage() {
                       {booking.address}, {booking.city}, {booking.state}
                     </p>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Customer: </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{t('cleanerBookings', 'customerLabel')}</span>
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {booking.user.firstName} {booking.user.lastName}
                       </span>
@@ -228,7 +230,7 @@ export default function CleanerBookingsPage() {
                     </div>
                     {booking.instructions && (
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
-                        <span className="font-medium">Instructions:</span> {booking.instructions}
+                        <span className="font-medium">{t('cleanerBookings', 'instructionsLabel')}</span> {booking.instructions}
                       </p>
                     )}
                   </div>
@@ -239,7 +241,7 @@ export default function CleanerBookingsPage() {
                       ${booking.totalAmount.toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                      {booking.duration} hours
+                      {booking.duration} {t('common', 'hours')}
                     </div>
 
                     {/* Action Buttons */}
@@ -253,7 +255,7 @@ export default function CleanerBookingsPage() {
                           leftIcon={<XCircle className="w-4 h-4" />}
                           className="text-red-600 border-red-300 hover:bg-red-50"
                         >
-                          Decline
+                          {t('common', 'decline')}
                         </Button>
                         <Button
                           size="sm"
@@ -261,7 +263,7 @@ export default function CleanerBookingsPage() {
                           loading={actionLoading === booking.id}
                           leftIcon={<CheckCircle className="w-4 h-4" />}
                         >
-                          Accept
+                          {t('common', 'accept')}
                         </Button>
                       </div>
                     )}
@@ -270,7 +272,7 @@ export default function CleanerBookingsPage() {
                       <div className="flex gap-2 justify-end">
                         <Link href={`/messages/${booking.id}`}>
                           <Button variant="outline" size="sm" leftIcon={<MessageSquare className="w-4 h-4" />}>
-                            Message
+                            {t('common', 'message')}
                           </Button>
                         </Link>
                         <Button
@@ -280,7 +282,7 @@ export default function CleanerBookingsPage() {
                           leftIcon={<Play className="w-4 h-4" />}
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          Start Job
+                          {t('cleanerBookings', 'startJob')}
                         </Button>
                       </div>
                     )}
@@ -289,7 +291,7 @@ export default function CleanerBookingsPage() {
                       <div className="flex gap-2 justify-end">
                         <Link href={`/messages/${booking.id}`}>
                           <Button variant="outline" size="sm" leftIcon={<MessageSquare className="w-4 h-4" />}>
-                            Message
+                            {t('common', 'message')}
                           </Button>
                         </Link>
                         <Button
@@ -298,21 +300,21 @@ export default function CleanerBookingsPage() {
                           loading={actionLoading === booking.id}
                           leftIcon={<CheckCircle className="w-4 h-4" />}
                         >
-                          Complete Job
+                          {t('cleanerBookings', 'completeJob')}
                         </Button>
                       </div>
                     )}
 
                     {booking.status === 'AWAITING_CONFIRMATION' && (
-                      <Badge variant="warning">Awaiting Customer Confirmation</Badge>
+                      <Badge variant="warning">{t('cleanerBookings', 'awaitingCustomerConfirmation')}</Badge>
                     )}
 
                     {booking.status === 'COMPLETED' && (
-                      <Badge variant="success">Completed</Badge>
+                      <Badge variant="success">{t('cleanerBookings', 'completed')}</Badge>
                     )}
 
                     {booking.status === 'CANCELLED' && (
-                      <Badge variant="error">Cancelled</Badge>
+                      <Badge variant="error">{t('statusLabels', 'CANCELLED')}</Badge>
                     )}
                   </div>
                 </div>

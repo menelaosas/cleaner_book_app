@@ -6,8 +6,10 @@ import Link from 'next/link';
 import axios from 'axios';
 import { Loader2, CheckCircle, XCircle, Mail, Home } from 'lucide-react';
 import { Button } from '../../components/ui';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function VerifyEmailPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -28,14 +30,14 @@ export default function VerifyEmailPage() {
       });
 
       setStatus('success');
-      setMessage('Your email has been verified successfully!');
+      setMessage(t('verifyEmail', 'successMessage'));
 
       setTimeout(() => {
         router.push('/login');
       }, 3000);
     } catch (error: any) {
       setStatus('error');
-      setMessage(error.response?.data?.message || 'Verification failed. The link may be expired or invalid.');
+      setMessage(error.response?.data?.message || t('verifyEmail', 'errorMessage'));
     }
   };
 
@@ -67,23 +69,23 @@ export default function VerifyEmailPage() {
 
         {/* Title */}
         <h1 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
-          {status === 'verifying' && 'Verifying Your Email...'}
-          {status === 'success' && 'Email Verified!'}
-          {status === 'error' && 'Verification Failed'}
+          {status === 'verifying' && t('verifyEmail', 'verifyingTitle')}
+          {status === 'success' && t('verifyEmail', 'successTitle')}
+          {status === 'error' && t('verifyEmail', 'errorTitle')}
         </h1>
 
         {/* Message */}
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {message || 'Please wait while we verify your email address.'}
+          {message || t('verifyEmail', 'pleaseWait')}
         </p>
 
         {/* Actions */}
         {status === 'success' && (
           <div className="space-y-3">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting to login page...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('verifyEmail', 'redirecting')}</p>
             <Link href="/login">
               <Button fullWidth>
-                Continue to Login
+                {t('verifyEmail', 'continueToLogin')}
               </Button>
             </Link>
           </div>
@@ -92,13 +94,13 @@ export default function VerifyEmailPage() {
         {status === 'error' && (
           <div className="space-y-3">
             <Button fullWidth onClick={resendVerification}>
-              Resend Verification Email
+              {t('verifyEmail', 'resendEmail')}
             </Button>
             <Link
               href="/register"
               className="block text-sm text-primary hover:underline"
             >
-              Back to Registration
+              {t('verifyEmail', 'backToRegistration')}
             </Link>
           </div>
         )}
@@ -109,14 +111,14 @@ export default function VerifyEmailPage() {
               <Mail className="w-8 h-8 text-blue-500" />
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Check your email for the verification link.
+              {t('verifyEmail', 'checkEmail')}
             </p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
             >
               <Home className="w-4 h-4" />
-              Back to Home
+              {t('verifyEmail', 'backToHome')}
             </Link>
           </div>
         )}

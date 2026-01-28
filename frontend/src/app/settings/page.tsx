@@ -6,8 +6,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 import { ArrowLeft, LogOut, Trash2 } from 'lucide-react';
 import { Card, Button, Input, Alert } from '../../components/ui';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
 
@@ -69,7 +71,7 @@ export default function SettingsPage() {
       );
 
       updateUser(response.data.data);
-      setSuccess('Profile updated successfully!');
+      setSuccess(t('settings', 'profileUpdated'));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -84,13 +86,13 @@ export default function SettingsPage() {
     setSuccess('');
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('New passwords do not match');
+      setError(t('settings', 'passwordsNoMatch'));
       setLoading(false);
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('settings', 'passwordMinError'));
       setLoading(false);
       return;
     }
@@ -109,7 +111,7 @@ export default function SettingsPage() {
         }
       );
 
-      setSuccess('Password changed successfully!');
+      setSuccess(t('settings', 'passwordChanged'));
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -124,7 +126,7 @@ export default function SettingsPage() {
 
   const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
-      'Are you sure you want to delete your account? This action cannot be undone.'
+      t('settings', 'deleteConfirm')
     );
 
     if (!confirmed) return;
@@ -136,7 +138,7 @@ export default function SettingsPage() {
         },
       });
 
-      alert('Account deleted successfully');
+      alert(t('settings', 'deleteSuccess'));
       logout();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to delete account');
@@ -155,7 +157,7 @@ export default function SettingsPage() {
               <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <ArrowLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
               </button>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('settings', 'title')}</h1>
             </div>
             <Button
               variant="ghost"
@@ -164,7 +166,7 @@ export default function SettingsPage() {
               leftIcon={<LogOut className="w-4 h-4" />}
               className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
-              Logout
+              {t('common', 'logout')}
             </Button>
           </div>
         </div>
@@ -175,9 +177,9 @@ export default function SettingsPage() {
         <Card padding="none" className="mb-6">
           <div className="flex border-b border-gray-200 dark:border-gray-700">
             {[
-              { value: 'profile', label: 'Profile' },
-              { value: 'security', label: 'Security' },
-              { value: 'notifications', label: 'Notifications' },
+              { value: 'profile', label: t('settings', 'profile') },
+              { value: 'security', label: t('settings', 'security') },
+              { value: 'notifications', label: t('settings', 'notifications') },
             ].map(tab => (
               <button
                 key={tab.value}
@@ -210,19 +212,19 @@ export default function SettingsPage() {
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <Card padding="md">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Personal Information</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{t('settings', 'personalInfo')}</h2>
 
             <form onSubmit={handleProfileUpdate} className="space-y-6">
               {/* Name */}
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="First Name"
+                  label={t('settings', 'firstName')}
                   value={profileData.firstName}
                   onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                   required
                 />
                 <Input
-                  label="Last Name"
+                  label={t('settings', 'lastName')}
                   value={profileData.lastName}
                   onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                   required
@@ -232,17 +234,17 @@ export default function SettingsPage() {
               {/* Email */}
               <div>
                 <Input
-                  label="Email"
+                  label={t('settings', 'email')}
                   type="email"
                   value={profileData.email}
                   disabled
-                  helperText="Email cannot be changed"
+                  helperText={t('settings', 'emailCannotChange')}
                 />
               </div>
 
               {/* Phone */}
               <Input
-                label="Phone Number"
+                label={t('settings', 'phoneNumber')}
                 type="tel"
                 value={profileData.phone}
                 onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
@@ -251,7 +253,7 @@ export default function SettingsPage() {
 
               {/* Address */}
               <Input
-                label="Address"
+                label={t('settings', 'address')}
                 value={profileData.address}
                 onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
                 placeholder="123 Main St"
@@ -260,17 +262,17 @@ export default function SettingsPage() {
               {/* City, State, Zip */}
               <div className="grid grid-cols-3 gap-4">
                 <Input
-                  label="City"
+                  label={t('settings', 'city')}
                   value={profileData.city}
                   onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
                 />
                 <Input
-                  label="State"
+                  label={t('settings', 'state')}
                   value={profileData.state}
                   onChange={(e) => setProfileData({ ...profileData, state: e.target.value })}
                 />
                 <Input
-                  label="Zip Code"
+                  label={t('settings', 'zipCode')}
                   value={profileData.zipCode}
                   onChange={(e) => setProfileData({ ...profileData, zipCode: e.target.value })}
                 />
@@ -278,7 +280,7 @@ export default function SettingsPage() {
 
               {/* Submit */}
               <Button type="submit" fullWidth loading={loading}>
-                Save Changes
+                {t('settings', 'saveChanges')}
               </Button>
             </form>
           </Card>
@@ -289,11 +291,11 @@ export default function SettingsPage() {
           <div className="space-y-6">
             {/* Change Password */}
             <Card padding="md">
-              <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Change Password</h2>
+              <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{t('settings', 'changePassword')}</h2>
 
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <Input
-                  label="Current Password"
+                  label={t('settings', 'currentPassword')}
                   type="password"
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
@@ -301,16 +303,16 @@ export default function SettingsPage() {
                 />
 
                 <Input
-                  label="New Password"
+                  label={t('settings', 'newPassword')}
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  helperText="Minimum 8 characters"
+                  helperText={t('settings', 'minEightChars')}
                   required
                 />
 
                 <Input
-                  label="Confirm New Password"
+                  label={t('settings', 'confirmNewPassword')}
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
@@ -318,23 +320,23 @@ export default function SettingsPage() {
                 />
 
                 <Button type="submit" fullWidth loading={loading}>
-                  Change Password
+                  {t('settings', 'changePassword')}
                 </Button>
               </form>
             </Card>
 
             {/* Delete Account */}
             <Card padding="md" className="border-red-200 dark:border-red-800">
-              <h2 className="text-2xl font-bold mb-4 text-red-600">Danger Zone</h2>
+              <h2 className="text-2xl font-bold mb-4 text-red-600">{t('settings', 'dangerZone')}</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Once you delete your account, there is no going back. Please be certain.
+                {t('settings', 'dangerText')}
               </p>
               <Button
                 variant="danger"
                 onClick={handleDeleteAccount}
                 leftIcon={<Trash2 className="w-4 h-4" />}
               >
-                Delete Account
+                {t('settings', 'deleteAccount')}
               </Button>
             </Card>
           </div>
@@ -343,14 +345,14 @@ export default function SettingsPage() {
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
           <Card padding="md">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Notification Preferences</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{t('settings', 'notificationPreferences')}</h2>
 
             <div className="space-y-4">
               {[
-                { label: 'Email Notifications', description: 'Receive booking updates via email', defaultChecked: true },
-                { label: 'SMS Notifications', description: 'Receive booking reminders via SMS', defaultChecked: false },
-                { label: 'Marketing Emails', description: 'Receive updates about new features', defaultChecked: true },
-                { label: 'Push Notifications', description: 'Receive push notifications in browser', defaultChecked: false },
+                { label: t('settings', 'emailNotifications'), description: t('settings', 'emailNotificationsDesc'), defaultChecked: true },
+                { label: t('settings', 'smsNotifications'), description: t('settings', 'smsNotificationsDesc'), defaultChecked: false },
+                { label: t('settings', 'marketingEmails'), description: t('settings', 'marketingEmailsDesc'), defaultChecked: true },
+                { label: t('settings', 'pushNotifications'), description: t('settings', 'pushNotificationsDesc'), defaultChecked: false },
               ].map((item, index, arr) => (
                 <div
                   key={item.label}
@@ -372,7 +374,7 @@ export default function SettingsPage() {
             </div>
 
             <Button fullWidth className="mt-6">
-              Save Preferences
+              {t('settings', 'savePreferences')}
             </Button>
           </Card>
         )}
